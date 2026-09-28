@@ -1,0 +1,61 @@
+Metadata-Version: 2.4
+Name: jev-chatgpt-plugin
+Version: 0.1.0
+Summary: Codex MCP decision server and automatic JEV PreToolUse gate.
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: typesafe-sdk==0.7.1
+Requires-Dist: pydantic<3.0,>=2.12
+Requires-Dist: pydantic-settings<3.0,>=2.2
+Requires-Dist: python-dotenv<2.0,>=1.0
+Requires-Dist: mcp<3.0,>=2.0
+Provides-Extra: dev
+Requires-Dist: pytest<9.0,>=8.0; extra == "dev"
+Requires-Dist: pytest-asyncio<1.0,>=0.23; extra == "dev"
+Requires-Dist: pytest-cov<7.0,>=5.0; extra == "dev"
+Requires-Dist: ruff<1.0,>=0.6; extra == "dev"
+Requires-Dist: mypy<2.0,>=1.10; extra == "dev"
+Requires-Dist: build<2.0,>=1.2; extra == "dev"
+
+# JEV Codex Tool Gate
+
+JEV is a project-local Codex MCP server combined with a `PreToolUse` MCP-tool
+hook. Before Codex executes a supported local tool call, the hook calls the
+server's `jev_guard_tool_call` tool with the proposed tool name and arguments.
+JEV returns a calibrated allow/deny decision:
+
+```text
+Codex proposes a local tool call
+        ↓
+PreToolUse invokes JEV MCP automatically
+        ↓
+allow → Codex executes the call
+deny  → Codex receives a replan recommendation; the call does not execute
+```
+
+Supported hook paths include Bash, `apply_patch`, connected MCP tools, and most
+local function tools. Hosted tools, such as WebSearch, are not intercepted.
+
+## Setup
+
+Follow [CODEX_SETUP.md](CODEX_SETUP.md). The project includes both the local
+MCP configuration and `.codex/hooks.json`; Codex will ask you to review and
+trust the hook before it runs.
+
+## Safety model
+
+- `JEV_PRE_TOOL_MINIMUM_PROBABILITY` sets the allow threshold (default `0.75`).
+- If JEV is unavailable or returns invalid data, the proposed call is denied.
+- The MCP server exposes `jev_guard_tool_call` and `jev_noul`; neither tool
+  executes an external action.
+- A deny result asks Codex to replan; it cannot directly replace one native tool
+  with another.
+
+## Validation
+
+```powershell
+pytest -q
+ruff check src test
+mypy src
+python -m build
+```
