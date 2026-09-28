@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jev-chatgpt-plugin"
+version = "0.1.0"
+description = "Codex MCP decision server and automatic JEV PreToolUse gate."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "typesafe-sdk==0.7.1",
+    "pydantic>=2.12,<3.0",
+    "pydantic-settings>=2.2,<3.0",
+    "python-dotenv>=1.0,<2.0",
+    "mcp>=2.0,<3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9.0",
+    "pytest-asyncio>=0.23,<1.0",
+    "pytest-cov>=5.0,<7.0",
+    "ruff>=0.6,<1.0",
+    "mypy>=1.10,<2.0",
+    "build>=1.2,<2.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+pythonpath = ["src"]
+addopts = "--import-mode=importlib"
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
